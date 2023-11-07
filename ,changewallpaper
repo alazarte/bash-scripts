@@ -1,0 +1,3 @@
+#!/bin/bash
+# WALLPAPERS_FOLDERS can have multiple folders, like '/path/folder1 /path/folder2'
+feh --bg-fill $(find $WALLPAPERS_FOLDERS -type f -name \( -iname "*png" -o -iname "*jpg" -o -iname "*jpeg"\) | shuf -n 1)

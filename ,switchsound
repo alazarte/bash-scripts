@@ -1,0 +1,26 @@
+#!/bin/bash
+
+scriptname=$(basename $0)
+helper_filepath="/tmp/.${scriptname}_helper"
+
+if ! [ -f $helper_filepath ]; then
+	echo 0 > $helper_filepath
+fi
+
+echo "Listing available sinks:"
+pactl list short sinks
+
+current_sink=$(cat $helper_filepath)
+for s in $(pactl list short sinks | grep -Eo "^[0-9]+"); do
+	if [ "$s" != "$current_sink" ]; then
+		pactl set-default-sink $s
+		echo $s > $helper_filepath
+
+		notify-send -u low -r 2 "Current sink" "$s: $(pactl get-default-sink | cut -d. -f2)"
+
+		for input in $(pacmd list-sink-inputs | grep index: | grep -Eo "[0-9]+"); do
+			pacmd move-sink-input $input $s
+		done
+		exit
+	fi
+done

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -xe
+
+sct_bin="$HOME/System/bin/sct"
+scriptname=$(basename $0)
+helper_filepath="/tmp/.${scriptname}_helper"
+default_level=6500
+increment=300
+
+function create_file {
+	echo $default_level > $helper_filepath
+	sct $default_level
+}
+
+[[ -f $helper_filepath ]] || create_file
+
+current_sct=$(cat $helper_filepath)
+
+case $1 in
+	up)
+		level=$(echo $current_sct + $increment | bc)
+		sct $level
+		echo $level > $helper_filepath
+		;;
+	down)
+		level=$(echo $current_sct - $increment | bc)
+		sct $level
+		echo $level > $helper_filepath
+		;;
+esac

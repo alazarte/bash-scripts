@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -xe
+
+connected=$(xrandr | grep " connected" | cut -d\  -f1 | tr '\n' ' ')
+edp=$(echo $connected | grep -Eo "eDP-?[0-9]" | head -n 1)
+hdmi=$(echo $connected | grep -Eo " (HDMI|DP)-?[0-9-]+" | head -n 1 | sed 's/ //g')
+connected_off=$(echo "$connected" | sed -E 's/([a-zA-Z0-9-]+)/--output \1 --off/g')
+
+all_outputs=$(xrandr | grep "connected" | grep -v $edp | cut -d\  -f1 | tr '\n' ' ')
+all_outputs_off=$(echo "$all_outputs" | sed -E 's/([a-zA-Z0-9-]+)/--output \1 --off/g')
+
+scriptname=$(basename $0)
+state_filepath="/tmp/.${scriptname}_helper"
+if ! [ -f $state_filepath ]; then
+	echo 0 > $state_filepath
+fi
+
+if [ "$hdmi" == "" ]; then
+	xrandr $all_outputs_off
+	xrandr --output $edp --auto --primary
+	notify-send -u low -r 3 "Only one monitor connected"
+	~/.fehbg
+	exit
+fi
+
+status=""
+if [ "$1" = "" ]; then
+	status=$(cat $state_filepath)
+else
+	status=$1
+fi
+
+case $status in
+	0)
+		# xrandr $connected_off
+		xrandr --output $edp --auto --primary
+		xrandr --output $hdmi --off
+		echo 1 > $state_filepath
+		notify-send -u low -r 3 "Only notebook monitor"
+		;;
+	1)
+		# xrandr $connected_off
+		xrandr --output $hdmi --auto --primary
+		xrandr --output $edp --off
+		notify-send -u low -r 3 "Only external monitor"
+		# Skip last state, I don't use it
+		echo 0 > $state_filepath
+		;;
+	2)
+		# xrandr $connected_off
+		xrandr --output $hdmi --auto --primary --output $edp --auto --left-of $hdmi
+		notify-send -u low -r 3 "Both monitors"
+		echo 0 > $state_filepath
+		;;
+esac
+
+,switchlayout us
+~/.fehbg

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -xe
+
+DMENU_MOST_USED_CACHE=$HOME/.cache/dmenu_run_most_used
+
+function create_custom_file() {
+	cat <<EOF > $DMENU_MOST_USED_CACHE
+,changewallpaper
+chromium
+electrum
+emacs
+firefox
+google-chrome
+obsidian
+teams-for-linux
+EOF
+}
+
+if [ "$1" == "all" ]; then
+	eval $(dmenu_path | rofi -dmenu)
+else
+	[ -f $DMENU_MOST_USED_CACHE ] || create_custom_file
+	eval $(cat $DMENU_MOST_USED_CACHE | rofi -dmenu)
+fi
