@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -xe
+
+function die {
+	echo "$@"
+	exit 1
+}
+
+[ -z $JOURNALPATH ] && die "Set JOURNALPATH path where journal files will be located"
+
+if [ "$1" == "e" ] ; then
+	$EDITOR $JOURNALPATH
+	exit 0
+fi
+
+format='%Y%m%d'
+
+case "$1" in
+	h|help|-h|-help)
+		echo "y|t for yesterday|tomorrow"
+		echo "e to open dir in vim"
+		echo "s to shuf and open random"
+		echo "l to list all"
+		echo "<date> to open that specific entry"
+		echo "  e.g.: 20230919 without fullpath nor .gpg extension"
+		;;
+	y)
+		datestring=`date -d yesterday +$format`
+		;;
+	t)
+		datestring=`date -d tomorrow +$format`
+		;;
+	*)
+		datestring=`date +$format`
+		;;
+esac
+filepath=$(realpath "$JOURNALPATH/$datestring")
+$EDITOR $filepath
+gpg -e -r $GPG_KEY $filepath

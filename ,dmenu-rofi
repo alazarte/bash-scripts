@@ -11,8 +11,9 @@ chromium
 electrum
 emacs
 firefox
-google-chrome
+google-chrome-stable
 obsidian
+poweroff
 teams-for-linux
 EOF
 }
