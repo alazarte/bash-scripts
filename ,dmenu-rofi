@@ -7,14 +7,20 @@ DMENU_MOST_USED_CACHE=$HOME/.cache/dmenu_run_most_used
 function create_custom_file() {
 	cat <<EOF > $DMENU_MOST_USED_CACHE
 ,changewallpaper
+,switchmonitors
+arandr
+audacity
 chromium
 electrum
 emacs
 firefox
-google-chrome-stable
+obs
 obsidian
+postman
 poweroff
+reboot
 teams-for-linux
+virtualbox
 EOF
 }
 

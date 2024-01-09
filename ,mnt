@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -e
+
+function die {
+	echo $1
+	exit 1
+}
+
+function choose_dir_contents {
+	if [ -d $1 ]; then
+		echo "$1 is not dir"
+		return 0
+	fi
+
+}
+
+mount_name="mnt_$(date +%s | md5sum | cut -d\  -f1)"
+mount_path="/mnt/${mount_name}"
+
+if [ "${1}" = "u" ]; then
+	disks=$(ls /dev/mapper/mnt_*)
+	IFS=" " read -r -a arr_disks <<<$(echo $disks)
+
+	echo "Select to unmount:"
+	echo $disks | tr " " "\n" | nl -n ln -w 1 -v 0
+	read -p "> " option
+
+	[[ $(echo $option | grep -E "[0-9]") ]] || exit 1
+
+	mount=${arr_disks[$option]}
+
+	sudo umount ${mount}
+	sudo cryptsetup luksClose ${mount}
+	exit 0
+fi
+
+disks=$(ls /dev/sd* | grep "[0-9]" | sort | uniq)
+IFS=" " read -r -a arr_disks <<<$(echo $disks)
+
+echo "Select disk:"
+echo $disks | tr " " "\n" | nl -n ln -w 1 -v 0
+read -p "> " option
+
+[[ $(echo $option | grep -E "[0-9]") ]] || exit 1
+
+disk=${arr_disks[$option]}
+
+echo "You selected disk: ${disk}"
+
+sudo cryptsetup luksOpen "${disk}" ${mount_name}
+sudo mkdir ${mount_path}
+sudo mount /dev/mapper/${mount_name} ${mount_path}
+echo "Mounted at ${mount_path}"

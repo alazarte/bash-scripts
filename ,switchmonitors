@@ -24,6 +24,11 @@ if [ "$hdmi" == "" ]; then
 	exit
 fi
 
+if [ "$1" = "-off" ]; then
+	xrandr $connected_off
+	shift
+fi
+
 status=""
 if [ "$1" = "" ]; then
 	status=$(cat $state_filepath)
@@ -34,15 +39,15 @@ fi
 case $status in
 	0)
 		# xrandr $connected_off
-		xrandr --output $edp --auto --primary
 		xrandr --output $hdmi --off
+		xrandr --output $edp --auto --primary
 		echo 1 > $state_filepath
 		notify-send -u low -r 3 "Only notebook monitor"
 		;;
 	1)
 		# xrandr $connected_off
-		xrandr --output $hdmi --auto --primary
 		xrandr --output $edp --off
+		xrandr --output $hdmi --auto --primary
 		notify-send -u low -r 3 "Only external monitor"
 		# Skip last state, I don't use it
 		echo 0 > $state_filepath
@@ -50,6 +55,12 @@ case $status in
 	2)
 		# xrandr $connected_off
 		xrandr --output $hdmi --auto --primary --output $edp --auto --left-of $hdmi
+		notify-send -u low -r 3 "Both monitors"
+		echo 0 > $state_filepath
+		;;
+	3)
+		xrandr $connected_off
+		xrandr --output $hdmi --auto --primary --output $edp --auto --right-of $hdmi
 		notify-send -u low -r 3 "Both monitors"
 		echo 0 > $state_filepath
 		;;
