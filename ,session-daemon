@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# To start a session, do:
+#   echo 1500 > /tmp/.sesion_start
+# Then add `cat /tmp/.session_state to your status bar or something
+
+session_state_filepath=/tmp/.session_state
+session_start_filepath=/tmp/.session_start
+echo 0 > $session_start_filepath
+
+if ! [ -z $1 ]; then
+	n=$(echo $1 | grep -Eo '^[0-9]+')
+	if [ -z $n ]; then
+		echo "Parameter '$1' not a number"
+		exit 1
+	fi
+	echo $1 > $session_start_filepath
+	exit 0
+fi
+
+while true; do
+	if [ -f $session_start_filepath ]; then
+		seconds=$(cat $session_start_filepath)
+		rm $session_start_filepath
+	fi
+	if [ $seconds -gt 0 ]; then
+		echo $seconds 🔴 > $session_state_filepath
+		seconds=$(($seconds - 1))
+	else
+		echo ✅ > $session_state_filepath
+	fi
+	sleep 1
+done
